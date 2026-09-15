@@ -436,11 +436,13 @@ function ApplicationPage({
         <h1>Start your application.</h1>
 
         <p>
-          Complete the form below to explore the ScholarGrant PH demo.
+          Complete the form below to continue your scholarship application.
         </p>
       </div>
 
       <div className="form-layout">
+
+        {/* LEFT SIDE - APPLICATION FORM */}
         <div className="application-form-card">
           <div className="form-card-heading">
             <div className="form-heading-icon">
@@ -454,6 +456,7 @@ function ApplicationPage({
           </div>
 
           <form onSubmit={submitApplication}>
+
             {/* NAME AND NICKNAME */}
             <div className="form-row">
               <div className="form-field">
@@ -616,16 +619,12 @@ function ApplicationPage({
               Please review your information before submitting
               your application.
             </p>
+
           </form>
         </div>
-      </div>
-    </main>
-  );
-}
 
-
-
-       <aside className="form-side">
+        {/* RIGHT SIDE - SCHOLARSHIP INFORMATION */}
+        <aside className="form-side">
           <div className="side-icon">
             <ShieldCheck size={30} />
           </div>
@@ -633,8 +632,9 @@ function ApplicationPage({
           <h3>Scholarship Application</h3>
 
           <p>
-            Complete your application carefully and provide accurate
-            information to help us review your scholarship request.
+            Complete your application carefully and provide
+            accurate information to help us review your
+            scholarship request.
           </p>
 
           <div className="side-list">
@@ -661,7 +661,11 @@ function ApplicationPage({
             </span>
           </div>
         </aside>
-  
+
+      </div>
+    </main>
+  );
+}
 
 function LoadingPage({ progress, stage }) {
   const messages = [
