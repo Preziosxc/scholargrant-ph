@@ -419,6 +419,7 @@ function AboutPage({ onApply }) {
     </main>
   );
 }
+
 function ApplicationPage({
   form,
   updateForm,
@@ -621,6 +622,9 @@ function ApplicationPage({
     </main>
   );
 }
+
+
+
        <aside className="form-side">
           <div className="side-icon">
             <ShieldCheck size={30} />
@@ -657,7 +661,7 @@ function ApplicationPage({
             </span>
           </div>
         </aside>
-      
+  
 
 function LoadingPage({ progress, stage }) {
   const messages = [
