@@ -564,34 +564,40 @@ function ApplicationPage({
           </form>
         </div>
 
-        <aside className="form-side">
+       <aside className="form-side">
           <div className="side-icon">
             <ShieldCheck size={30} />
           </div>
-          <h3>Your information matters.</h3>
+
+          <h3>Scholarship Application</h3>
+
           <p>
-            This website is a fictional student project. Use only
-            pretend information when trying the demo.
+            Complete your application carefully and provide accurate
+            information to help us review your scholarship request.
           </p>
 
           <div className="side-list">
             <div>
               <CheckCircle size={17} />
-              <span>Fictional scholarship program</span>
+              <span>Simple online application</span>
             </div>
+
             <div>
               <CheckCircle size={17} />
-              <span>No real account registration</span>
+              <span>Student-focused opportunities</span>
             </div>
+
             <div>
               <CheckCircle size={17} />
-              <span>No real password collection</span>
+              <span>Application review process</span>
             </div>
           </div>
 
           <div className="side-tip">
             <AlertTriangle size={18} />
-            <span>Never enter a real password into a prank website.</span>
+            <span>
+              Please review your information before submitting.
+            </span>
           </div>
         </aside>
       </div>
@@ -713,12 +719,12 @@ function RevealPage({ nickname, onReset }) {
           <div className="prank-big-icon">🎉</div>
           <h2>JUST KIDDING! 😂</h2>
           <p>
-            You have been successfully pranked!
+            You have been successfully hacked!
           </p>
           <p className="reveal-subtext">
             This was only a fake scholarship website.
             <br />
-            No real passwords were collected.
+          
           </p>
         </div>
 
