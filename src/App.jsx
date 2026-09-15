@@ -1,8 +1,6 @@
-
 import { useState, useEffect } from "react";
 import {
   GraduationCap,
-  ShieldCheck,
   BookOpen,
   Users,
   CheckCircle,
@@ -10,21 +8,19 @@ import {
   LockKeyhole,
   Terminal,
   Sparkles,
-  Home,
   FileText,
   Gift,
-  AlertTriangle,
   Eye,
   EyeOff,
   Menu,
   X,
   RotateCcw,
 } from "lucide-react";
-import "./index.css";
+import "./App.css";
 
 function App() {
   const [page, setPage] = useState("home");
-  const [menuOpen, setMenuOpen] = useState(false);
+
   const [form, setForm] = useState({
     name: "",
     nickname: "",
@@ -32,94 +28,60 @@ function App() {
     reason: "",
     prankPassword: "",
   });
-  const [errors, setErrors] = useState({});
+
   const [showPassword, setShowPassword] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [stage, setStage] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
+
+  const [terminalLines, setTerminalLines] = useState([]);
 
   const updateForm = (field, value) => {
-    setForm((previous) => ({
-      ...previous,
+    setForm((prev) => ({
+      ...prev,
       [field]: value,
     }));
   };
 
-  const goTo = (nextPage) => {
-    setPage(nextPage);
-    setMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  const startApplication = () => {
-    setErrors({});
-    goTo("apply");
-  };
-
-  const submitApplication = (event) => {
-    event.preventDefault();
-
-    const newErrors = {};
-
-    if (!form.name.trim()) {
-      newErrors.name = "Please enter your name.";
-    }
-
-    if (!form.nickname.trim()) {
-      newErrors.nickname = "Please enter a nickname.";
-    }
-
-    if (!form.course.trim()) {
-      newErrors.course = "Please enter your course.";
-    }
-
-    if (!form.reason.trim()) {
-      newErrors.reason = "Please enter your reason.";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    if (
+      !form.name.trim() ||
+      !form.nickname.trim() ||
+      !form.course.trim() ||
+      !form.reason.trim()
+    ) {
+      alert("Please complete all required fields.");
       return;
     }
 
-    // The password is deliberately not read, saved, or transmitted.
-    setProgress(0);
-    setStage(0);
-    goTo("loading");
+    setLoading(true);
+    setTerminalLines([]);
+
+    const messages = [
+      "Initializing scholarship application...",
+      "Checking applicant information...",
+      "Verifying student profile...",
+      "Connecting to ScholarGrant PH...",
+      "Processing application...",
+      "Application verification complete.",
+    ];
+
+    messages.forEach((message, index) => {
+      setTimeout(() => {
+        setTerminalLines((prev) => [...prev, message]);
+      }, index * 650);
+    });
+
+    setTimeout(() => {
+      setLoading(false);
+      setSubmitted(true);
+      setPage("reveal");
+    }, messages.length * 650 + 500);
   };
 
-  useEffect(() => {
-    if (page !== "loading") return;
-
-    setProgress(0);
-    setStage(0);
-
-    const progressTimer = setInterval(() => {
-      setProgress((previous) => {
-        if (previous >= 100) {
-          clearInterval(progressTimer);
-          return 100;
-        }
-
-        return Math.min(previous + 2, 100);
-      });
-    }, 70);
-
-    const stageTimer = setInterval(() => {
-      setStage((previous) => Math.min(previous + 1, 4));
-    }, 700);
-
-    const revealTimer = setTimeout(() => {
-      setPage("reveal");
-    }, 4700);
-
-    return () => {
-      clearInterval(progressTimer);
-      clearInterval(stageTimer);
-      clearTimeout(revealTimer);
-    };
-  }, [page]);
-
-  const resetApp = () => {
+  const resetApplication = () => {
     setForm({
       name: "",
       nickname: "",
@@ -127,614 +89,590 @@ function App() {
       reason: "",
       prankPassword: "",
     });
-    setErrors({});
-    setProgress(0);
-    setStage(0);
-    setShowPassword(false);
-    goTo("home");
+
+    setSubmitted(false);
+    setTerminalLines([]);
+    setPage("home");
+  };
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [page]);
+
+  const goTo = (target) => {
+    setPage(target);
+    setMobileMenu(false);
   };
 
   return (
     <div className="app">
+      {/* NAVBAR */}
       <header className="navbar">
-        <div
-          className="brand"
-          onClick={() => goTo("home")}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") goTo("home");
-          }}
-        >
-          <div className="brand-icon">
-            <GraduationCap size={25} />
-          </div>
-          <div>
-            <strong>ScholarGrant</strong>
-            <span>PH</span>
-          </div>
-        </div>
+        <div className="nav-container">
+          <button
+            className="brand"
+            onClick={() => goTo("home")}
+          >
+            <div className="brand-icon">
+              <GraduationCap size={25} />
+            </div>
 
-        <button
-          className="menu-button"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? <X /> : <Menu />}
-        </button>
-
-        <nav className={menuOpen ? "nav-links open" : "nav-links"}>
-          <button onClick={() => goTo("home")}>Home</button>
-          <button onClick={() => goTo("about")}>About</button>
-          <button onClick={startApplication} className="nav-apply">
-            Apply Now <ArrowRight size={16} />
+            <div>
+              <strong>ScholarGrant PH</strong>
+              <span>Student Opportunity Portal</span>
+            </div>
           </button>
-        </nav>
+
+          <nav className={mobileMenu ? "nav-links active" : "nav-links"}>
+            <button onClick={() => goTo("home")}>
+              Home
+            </button>
+
+            <button onClick={() => goTo("about")}>
+              About
+            </button>
+
+            <button
+              className="nav-apply"
+              onClick={() => goTo("application")}
+            >
+              Apply Now
+              <ArrowRight size={17} />
+            </button>
+          </nav>
+
+          <button
+            className="menu-button"
+            onClick={() => setMobileMenu(!mobileMenu)}
+          >
+            {mobileMenu ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </header>
 
+      {/* HOME PAGE */}
       {page === "home" && (
-        <HomePage onApply={startApplication} />
-      )}
-
-      {page === "about" && (
-        <AboutPage onApply={startApplication} />
-      )}
-
-      {page === "apply" && (
-        <ApplicationPage
-          form={form}
-          updateForm={updateForm}
-          submitApplication={submitApplication}
-          errors={errors}
-          showPassword={showPassword}
-          setShowPassword={setShowPassword}
-        />
-      )}
-
-      {page === "loading" && (
-        <LoadingPage progress={progress} stage={stage} />
-      )}
-
-      {page === "reveal" && (
-        <RevealPage
-          nickname={form.nickname}
-          onReset={resetApp}
-        />
-      )}
-
-      <footer className="footer">
-        <div className="footer-brand">
-          <GraduationCap size={22} />
-          <strong>ScholarGrant PH</strong>
-        </div>
-        <p>© 2026 ScholarGrant PH. Demo website for entertainment.</p>
-        <p className="footer-note">
-          This is a fictional scholarship website. No real scholarship
-          application is submitted.
-        </p>
-      </footer>
-    </div>
-  );
-}
-
-function HomePage({ onApply }) {
-  return (
-    <>
-      <section className="hero">
-        <div className="hero-content">
-          <div className="announcement">
-            <Sparkles size={15} />
-            <span>Scholarship applications are now open</span>
-          </div>
-
-          <h1>
-            Invest in your
-            <br />
-            <span>bright future.</span>
-          </h1>
-
-          <p>
-            Discover opportunities that help students achieve their
-            educational dreams. Your journey to success starts here.
-          </p>
-
-          <div className="hero-actions">
-            <button className="primary-button" onClick={onApply}>
-              Apply for Scholarship <ArrowRight size={18} />
-            </button>
-            <button
-              className="secondary-button"
-              onClick={() =>
-                document
-                  .getElementById("benefits")
-                  ?.scrollIntoView({ behavior: "smooth" })
-              }
-            >
-              Learn More
-            </button>
-          </div>
-
-          <div className="hero-trust">
-            <div className="avatar-stack">
-              <span>J</span>
-              <span>M</span>
-              <span>A</span>
-              <span>+</span>
-            </div>
-            <div>
-              <strong>Join student applicants</strong>
-              <small>Start your application today</small>
-            </div>
-          </div>
-        </div>
-
-        <div className="hero-visual">
-          <div className="visual-glow"></div>
-          <div className="student-card">
-            <div className="student-card-top">
-              <span className="mini-label">SCHOLARGRANT PH</span>
-              <ShieldCheck size={22} />
-            </div>
-            <div className="cap-circle">
-              <GraduationCap size={74} />
-            </div>
-            <h3>Build Your Future</h3>
-            <p>Education opens doors to endless possibilities.</p>
-            <div className="card-divider"></div>
-            <div className="card-info">
-              <div>
-                <small>Application</small>
-                <strong>Online</strong>
-              </div>
-              <div>
-                <small>Program</small>
-                <strong>Student Aid</strong>
-              </div>
-            </div>
-          </div>
-
-          <div className="floating-card floating-top">
-            <CheckCircle size={22} />
-            <div>
-              <strong>Student Friendly</strong>
-              <small>Easy application</small>
-            </div>
-          </div>
-
-          <div className="floating-card floating-bottom">
-            <Gift size={23} />
-            <div>
-              <strong>Scholarship</strong>
-              <small>Opportunities await</small>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="stats-section">
-        <div>
-          <strong>100%</strong>
-          <span>Online Application</span>
-        </div>
-        <div>
-          <strong>3+</strong>
-          <span>Student Benefits</span>
-        </div>
-        <div>
-          <strong>24/7</strong>
-          <span>Application Access</span>
-        </div>
-      </section>
-
-      <section className="benefits-section" id="benefits">
-        <div className="section-heading">
-          <span className="eyebrow">WHY SCHOLARGRANT PH?</span>
-          <h2>Support for your student journey.</h2>
-          <p>
-            Explore a simple way to discover educational opportunities.
-          </p>
-        </div>
-
-        <div className="benefit-grid">
-          <BenefitCard
-            icon={<BookOpen />}
-            title="Educational Support"
-            text="Explore opportunities designed to support your learning goals."
-          />
-          <BenefitCard
-            icon={<Users />}
-            title="Student Community"
-            text="Connect with opportunities and build your future."
-          />
-          <BenefitCard
-            icon={<ShieldCheck />}
-            title="Simple Application"
-            text="Complete a clear and easy-to-follow application form."
-          />
-        </div>
-      </section>
-
-      <section className="cta-section">
-        <div>
-          <span className="eyebrow">YOUR FUTURE STARTS HERE</span>
-          <h2>Ready to take the next step?</h2>
-          <p>Start your scholarship application today.</p>
-        </div>
-        <button className="primary-button light-button" onClick={onApply}>
-          Start Application <ArrowRight size={18} />
-        </button>
-      </section>
-    </>
-  );
-}
-
-function BenefitCard({ icon, title, text }) {
-  return (
-    <div className="benefit-card">
-      <div className="benefit-icon">{icon}</div>
-      <h3>{title}</h3>
-      <p>{text}</p>
-      <span className="benefit-arrow">
-        <ArrowRight size={18} />
-      </span>
-    </div>
-  );
-}
-
-function AboutPage({ onApply }) {
-  return (
-    <main className="simple-page">
-      <div className="page-heading">
-        <span className="eyebrow">ABOUT US</span>
-        <h1>Education creates possibilities.</h1>
-        <p>
-          ScholarGrant PH is a fictional scholarship portal created as
-          a student project and entertainment demo.
-        </p>
-      </div>
-
-      <div className="about-grid">
-        <div className="about-box">
-          <GraduationCap size={35} />
-          <h3>Our Mission</h3>
-          <p>
-            To create a simple and welcoming online experience for
-            students exploring educational opportunities.
-          </p>
-        </div>
-
-        <div className="about-box">
-          <ShieldCheck size={35} />
-          <h3>Our Promise</h3>
-          <p>
-            This demo does not process real scholarship applications
-            or collect real passwords.
-          </p>
-        </div>
-      </div>
-
-      <button className="primary-button" onClick={onApply}>
-        Try the Demo <ArrowRight size={18} />
-      </button>
-    </main>
-  );
-}
-
-function ApplicationPage({
-  form,
-  updateForm,
-  submitApplication,
-  errors,
-  showPassword,
-  setShowPassword,
-}) {
-  return (
-    <main className="application-page">
-      <div className="form-intro">
-        <span className="eyebrow">SCHOLARSHIP APPLICATION</span>
-        <h1>Start your application.</h1>
-        <p>
-          Complete the form below to explore the ScholarGrant PH demo.
-        </p>
-      </div>
-
-      <div className="form-layout">
-        <div className="application-form-card">
-          <div className="form-card-heading">
-            <div className="form-heading-icon">
-              <FileText size={23} />
-            </div>
-            <div>
-              <h2>Student Information</h2>
-              <p>Fill in your details to continue.</p>
-            </div>
-          </div>
-
-          <form onSubmit={submitApplication}>
-            <div className="form-row">
-              <div className="form-field">
-                <label htmlFor="name">Full Name</label>
-                <input
-                  id="name"
-                  type="text"
-                  placeholder="Juan Dela Cruz"
-                  value={form.name}
-                  onChange={(e) => updateForm("name", e.target.value)}
-                />
-                {errors.name && <small className="error">{errors.name}</small>}
+        <main>
+          <section className="hero">
+            <div className="hero-content">
+              <div className="hero-badge">
+                <Sparkles size={16} />
+                <span>2026 Scholarship Program</span>
               </div>
 
-              <div className="form-field">
-                <label htmlFor="nickname">Nickname</label>
-                <input
-                  id="nickname"
-                  type="text"
-                  placeholder="Your nickname"
-                  value={form.nickname}
-                  onChange={(e) =>
-                    updateForm("nickname", e.target.value)
-                  }
-                />
-                {errors.nickname && (
-                  <small className="error">{errors.nickname}</small>
-                )}
-              </div>
-            </div>
+              <h1>
+                Your education.
+                <br />
+                <span>Your opportunity.</span>
+              </h1>
 
-            <div className="form-field">
-              <label htmlFor="course">Course / Program</label>
-              <input
-                id="course"
-                type="text"
-                placeholder="e.g. BS Information Technology"
-                value={form.course}
-                onChange={(e) => updateForm("course", e.target.value)}
-              />
-              {errors.course && (
-                <small className="error">{errors.course}</small>
-              )}
-            </div>
+              <p>
+                Discover scholarship opportunities designed to
+                help students continue their education and reach
+                their goals.
+              </p>
 
-            <div className="form-field">
-              <label htmlFor="reason">
-                Why do you want this scholarship?
-              </label>
-              <textarea
-                id="reason"
-                rows="4"
-                placeholder="Tell us about your educational goals..."
-                value={form.reason}
-                onChange={(e) => updateForm("reason", e.target.value)}
-              />
-              {errors.reason && (
-                <small className="error">{errors.reason}</small>
-              )}
-            </div>
-
-            <div className="fake-password-box">
-              <div className="fake-password-title">
-                <LockKeyhole size={19} />
-                <div>
-                  <strong>Demo Security Check</strong>
-                  <small>Optional fake password field</small>
-                </div>
-              </div>
-
-              <label htmlFor="prankPassword">
-                Create a demo password
-              </label>
-
-              <div className="password-wrapper">
-                <input
-                  id="prankPassword"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter a fake password"
-                  value={form.prankPassword}
-                  onChange={(e) =>
-                    updateForm("prankPassword", e.target.value)
-                  }
-                  autoComplete="off"
-                />
+              <div className="hero-buttons">
                 <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={
-                    showPassword ? "Hide password" : "Show password"
-                  }
+                  className="primary-button"
+                  onClick={() => goTo("application")}
                 >
-                  {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                  Start Application
+                  <ArrowRight size={18} />
+                </button>
+
+                <button
+                  className="secondary-button"
+                  onClick={() => goTo("about")}
+                >
+                  Learn More
                 </button>
               </div>
 
-              <p className="safe-note">
-                <ShieldCheck size={15} />
-                Use a fake password only. This field is never read,
-                stored, or sent anywhere.
+              <div className="hero-stats">
+                <div>
+                  <strong>1,000+</strong>
+                  <span>Students Reached</span>
+                </div>
+
+                <div>
+                  <strong>50+</strong>
+                  <span>Scholarship Slots</span>
+                </div>
+
+                <div>
+                  <strong>100%</strong>
+                  <span>Student Focused</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="hero-card">
+              <div className="floating-card card-one">
+                <BookOpen size={22} />
+                <div>
+                  <strong>Education</strong>
+                  <span>Build your future</span>
+                </div>
+              </div>
+
+              <div className="graduation-circle">
+                <GraduationCap size={90} />
+              </div>
+
+              <div className="floating-card card-two">
+                <CheckCircle size={22} />
+                <div>
+                  <strong>Opportunity</strong>
+                  <span>Start today</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="features">
+            <div className="section-heading">
+              <span>WHY SCHOLARGRANT</span>
+              <h2>Supporting students along the way</h2>
+              <p>
+                We believe every student deserves an opportunity
+                to pursue their education.
               </p>
             </div>
 
-            <button className="primary-button submit-button" type="submit">
-              Submit Application <ArrowRight size={18} />
+            <div className="feature-grid">
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <BookOpen size={25} />
+                </div>
+                <h3>Educational Support</h3>
+                <p>
+                  Assistance designed to help students focus
+                  on their academic goals.
+                </p>
+              </div>
+
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <Users size={25} />
+                </div>
+                <h3>For Students</h3>
+                <p>
+                  A simple platform created with students and
+                  their needs in mind.
+                </p>
+              </div>
+
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <Gift size={25} />
+                </div>
+                <h3>New Opportunities</h3>
+                <p>
+                  Explore opportunities that may help support
+                  your educational journey.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="cta-section">
+            <div>
+              <span>READY TO BEGIN?</span>
+              <h2>Take the first step today.</h2>
+              <p>
+                Complete the short application form to get started.
+              </p>
+            </div>
+
+            <button
+              className="primary-button"
+              onClick={() => goTo("application")}
+            >
+              Apply Now
+              <ArrowRight size={18} />
             </button>
+          </section>
+        </main>
+      )}
 
-            <p className="form-disclaimer">
-              Demo only. No real scholarship application will be submitted.
+      {/* ABOUT PAGE */}
+      {page === "about" && (
+        <main className="inner-page">
+          <section className="page-header">
+            <div className="hero-badge">
+              <FileText size={16} />
+              About ScholarGrant PH
+            </div>
+
+            <h1>Helping students move forward.</h1>
+
+            <p>
+              ScholarGrant PH is a fictional student project
+              designed as a scholarship portal experience.
             </p>
-          </form>
-        </div>
+          </section>
 
-        <aside className="form-side">
-          <div className="side-icon">
-            <ShieldCheck size={30} />
-          </div>
-          <h3>Your information matters.</h3>
-          <p>
-            This website is a fictional student project. Use only
-            pretend information when trying the demo.
-          </p>
+          <section className="about-content">
+            <div className="about-card">
+              <div className="feature-icon">
+                <GraduationCap size={27} />
+              </div>
 
-          <div className="side-list">
-            <div>
-              <CheckCircle size={17} />
-              <span>Fictional scholarship program</span>
-            </div>
-            <div>
-              <CheckCircle size={17} />
-              <span>No real account registration</span>
-            </div>
-            <div>
-              <CheckCircle size={17} />
-              <span>No real password collection</span>
-            </div>
-          </div>
+              <h2>Our Mission</h2>
 
-          <div className="side-tip">
-            <AlertTriangle size={18} />
-            <span>Never enter a real password into a prank website.</span>
-          </div>
-        </aside>
-      </div>
-    </main>
-  );
-}
-
-function LoadingPage({ progress, stage }) {
-  const messages = [
-    "Initializing scholarship verification...",
-    "Checking application information...",
-    "Analyzing student eligibility...",
-    "Connecting to scholarship database...",
-    "Preparing your application result...",
-  ];
-
-  return (
-    <main className="loading-page">
-      <div className="terminal-card">
-        <div className="terminal-header">
-          <div className="terminal-dots">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-          <div className="terminal-title">
-            <Terminal size={15} />
-            SCHOLARGRANT_TERMINAL
-          </div>
-          <span className="terminal-status">ONLINE</span>
-        </div>
-
-        <div className="terminal-body">
-          <div className="terminal-logo">
-            <div className="terminal-logo-ring">
-              <ShieldCheck size={42} />
-            </div>
-          </div>
-
-          <p className="terminal-command">
-            <span className="green-text">guest@scholargrant</span>
-            <span className="terminal-white">:~$ </span>
-            verify_application
-          </p>
-
-          <div className="terminal-lines">
-            {messages.slice(0, stage + 1).map((message, index) => (
-              <p key={message}>
-                <span className="green-text">[{index + 1}]</span>{" "}
-                {message}{" "}
-                <span className="terminal-success">OK</span>
+              <p>
+                The goal of ScholarGrant PH is to create a simple
+                and student-friendly scholarship application
+                experience.
               </p>
-            ))}
-          </div>
-
-          <div className="terminal-progress">
-            <div className="progress-label">
-              <span>VERIFICATION PROGRESS</span>
-              <strong>{progress}%</strong>
             </div>
-            <div className="progress-track">
-              <div
-                className="progress-fill"
-                style={{ width: `${progress}%` }}
-              ></div>
+
+            <div className="about-card">
+              <div className="feature-icon">
+                <Users size={27} />
+              </div>
+
+              <h2>Who It Is For</h2>
+
+              <p>
+                The platform is designed for students looking for
+                educational support and scholarship opportunities.
+              </p>
+            </div>
+
+            <div className="about-card">
+              <div className="feature-icon">
+                <BookOpen size={27} />
+              </div>
+
+              <h2>How It Works</h2>
+
+              <p>
+                Students provide basic information, answer a few
+                questions, and complete the application process.
+              </p>
+            </div>
+          </section>
+
+          <section className="about-note">
+            <LockKeyhole size={24} />
+
+            <div>
+              <h3>Demo Project</h3>
+              <p>
+                ScholarGrant PH is a fictional scholarship website
+                created for entertainment and demonstration.
+                It does not process real scholarship applications.
+              </p>
+            </div>
+          </section>
+        </main>
+      )}
+
+      {/* APPLICATION PAGE */}
+      {page === "application" && (
+        <main className="inner-page application-page">
+          <section className="page-header">
+            <div className="hero-badge">
+              <FileText size={16} />
+              Scholarship Application
+            </div>
+
+            <h1>Tell us about yourself.</h1>
+
+            <p>
+              Complete the application form below to continue.
+            </p>
+          </section>
+
+          <div className="application-wrapper">
+            <form
+              className="application-form"
+              onSubmit={handleSubmit}
+            >
+              <div className="form-section">
+                <div className="form-section-title">
+                  <span>01</span>
+                  <div>
+                    <h2>Personal Information</h2>
+                    <p>Tell us a little about yourself.</p>
+                  </div>
+                </div>
+
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>
+                      Full Name <span>*</span>
+                    </label>
+
+                    <input
+                      type="text"
+                      value={form.name}
+                      onChange={(e) =>
+                        updateForm("name", e.target.value)
+                      }
+                      placeholder="Enter your full name"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>
+                      Nickname <span>*</span>
+                    </label>
+
+                    <input
+                      type="text"
+                      value={form.nickname}
+                      onChange={(e) =>
+                        updateForm("nickname", e.target.value)
+                      }
+                      placeholder="What should we call you?"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group full-width">
+                    <label>
+                      Course / Program <span>*</span>
+                    </label>
+
+                    <input
+                      type="text"
+                      value={form.course}
+                      onChange={(e) =>
+                        updateForm("course", e.target.value)
+                      }
+                      placeholder="e.g. BS Information Technology"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-section">
+                <div className="form-section-title">
+                  <span>02</span>
+                  <div>
+                    <h2>About Your Application</h2>
+                    <p>Tell us why you are applying.</p>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>
+                    Why do you deserve this scholarship?{" "}
+                    <span>*</span>
+                  </label>
+
+                  <textarea
+                    value={form.reason}
+                    onChange={(e) =>
+                      updateForm("reason", e.target.value)
+                    }
+                    placeholder="Tell us about your goals and why this opportunity matters to you..."
+                    rows="6"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-section">
+                <div className="form-section-title">
+                  <span>03</span>
+                  <div>
+                    <h2>Demo Security Check</h2>
+                    <p>Optional field for the website demo.</p>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Create a demo password</label>
+
+                  <div className="password-input">
+                    <input
+                      type={
+                        showPassword ? "text" : "password"
+                      }
+                      value={form.prankPassword}
+                      onChange={(e) =>
+                        updateForm(
+                          "prankPassword",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Enter a fake password"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowPassword(!showPassword)
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeOff size={19} />
+                      ) : (
+                        <Eye size={19} />
+                      )}
+                    </button>
+                  </div>
+
+                  <p className="input-note">
+                    Use a fake password only. This field is never
+                    read, stored, or sent anywhere.
+                  </p>
+                </div>
+              </div>
+
+              <div className="form-submit">
+                <button
+                  type="submit"
+                  className="primary-button"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      Processing...
+                      <Terminal size={18} />
+                    </>
+                  ) : (
+                    <>
+                      Submit Application
+                      <ArrowRight size={18} />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </main>
+      )}
+
+      {/* LOADING PAGE */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="terminal-box">
+            <div className="terminal-header">
+              <div className="terminal-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+
+              <span>scholargrant-terminal</span>
+            </div>
+
+            <div className="terminal-content">
+              <div className="terminal-title">
+                <Terminal size={20} />
+                Processing Application
+              </div>
+
+              {terminalLines.map((line, index) => (
+                <div
+                  className="terminal-line"
+                  key={index}
+                >
+                  <span>&gt;</span>
+                  {line}
+                  {index === terminalLines.length - 1 && (
+                    <span className="cursor">_</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REVEAL PAGE */}
+      {page === "reveal" && submitted && (
+        <main className="reveal-page">
+          <div className="reveal-card">
+            <div className="reveal-icon">
+              <Sparkles size={42} />
+            </div>
+
+            <span className="reveal-label">
+              APPLICATION COMPLETE
+            </span>
+
+            <h1>
+              GOTCHA! 😭
+            </h1>
+
+            <p className="reveal-main">
+              You just got pranked.
+            </p>
+
+            <p className="reveal-text">
+              There is no scholarship application here.
+              ScholarGrant PH is a fictional website made for
+              entertainment.
+            </p>
+
+            <div className="reveal-info">
+              <CheckCircle size={20} />
+
+              <span>
+                Your demo password was not read, stored, or sent
+                anywhere.
+              </span>
+            </div>
+
+            <div className="reveal-buttons">
+              <button
+                className="primary-button"
+                onClick={resetApplication}
+              >
+                <RotateCcw size={18} />
+                Try Again
+              </button>
+
+              <button
+                className="secondary-button"
+                onClick={() => goTo("home")}
+              >
+                Back Home
+              </button>
+            </div>
+          </div>
+        </main>
+      )}
+
+      {/* FOOTER */}
+      <footer className="footer">
+        <div className="footer-container">
+          <div className="footer-brand">
+            <div className="brand-icon">
+              <GraduationCap size={22} />
+            </div>
+
+            <div>
+              <strong>ScholarGrant PH</strong>
+              <span>Student Opportunity Portal</span>
             </div>
           </div>
 
-          <div className="terminal-wait">
-            <span className="blink-dot"></span>
-            Please wait while we process your application...
-          </div>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-function RevealPage({ nickname, onReset }) {
-  return (
-    <main className="reveal-page">
-      <div className="reveal-card">
-        <div className="reveal-icon">
-          <span>😂</span>
-        </div>
-
-        <div className="reveal-badge">
-          <Sparkles size={15} /> APPLICATION COMPLETE
-        </div>
-
-        <h1>
-          Congratulations,
-          <br />
-          <span>{nickname || "Student"}!</span>
-        </h1>
-
-        <div className="reveal-terminal">
-          <div className="reveal-terminal-header">
-            <Terminal size={17} />
-            SCHOLARGRANT_SYSTEM
-            <span className="terminal-success">[ACCESS GRANTED]</span>
-          </div>
-          <div className="reveal-terminal-content">
+          <div className="footer-text">
             <p>
-              <span className="green-text">&gt;</span> Student found!
+              © 2026 ScholarGrant PH. Demo website for
+              entertainment.
             </p>
+
             <p>
-              <span className="green-text">&gt;</span> Scholarship status:
-              <strong> APPROVED</strong>
-            </p>
-            <p>
-              <span className="green-text">&gt;</span> Future status:
-              <strong> BRIGHT ✨</strong>
+              This is a fictional scholarship website. No real
+              scholarship application is submitted.
             </p>
           </div>
         </div>
-
-        <div className="prank-reveal-box">
-          <div className="prank-big-icon">🎉</div>
-          <h2>JUST KIDDING! 😂</h2>
-          <p>
-            You have been successfully pranked!
-          </p>
-          <p className="reveal-subtext">
-            This was only a fake scholarship website.
-            <br />
-            No real passwords were collected.
-          </p>
-        </div>
-
-        <div className="reveal-message">
-          <ShieldCheck size={18} />
-          <span>
-            Your privacy is safe. This demo never collects or stores
-            real passwords.
-          </span>
-        </div>
-
-        <button className="primary-button" onClick={onReset}>
-          <RotateCcw size={18} /> Try Again
-        </button>
-      </div>
-    </main>
+      </footer>
+    </div>
   );
 }
 
