@@ -414,12 +414,11 @@ function AboutPage({ onApply }) {
       </div>
 
       <button className="primary-button" onClick={onApply}>
-        Try the Demo <ArrowRight size={18} />
+        Apply Now <ArrowRight size={18} />
       </button>
     </main>
   );
 }
-
 function ApplicationPage({
   form,
   updateForm,
@@ -432,7 +431,9 @@ function ApplicationPage({
     <main className="application-page">
       <div className="form-intro">
         <span className="eyebrow">SCHOLARSHIP APPLICATION</span>
+
         <h1>Start your application.</h1>
+
         <p>
           Complete the form below to explore the ScholarGrant PH demo.
         </p>
@@ -444,6 +445,7 @@ function ApplicationPage({
             <div className="form-heading-icon">
               <FileText size={23} />
             </div>
+
             <div>
               <h2>Student Information</h2>
               <p>Fill in your details to continue.</p>
@@ -451,21 +453,31 @@ function ApplicationPage({
           </div>
 
           <form onSubmit={submitApplication}>
+            {/* NAME AND NICKNAME */}
             <div className="form-row">
               <div className="form-field">
                 <label htmlFor="name">Full Name</label>
+
                 <input
                   id="name"
                   type="text"
                   placeholder="Juan Dela Cruz"
                   value={form.name}
-                  onChange={(e) => updateForm("name", e.target.value)}
+                  onChange={(e) =>
+                    updateForm("name", e.target.value)
+                  }
                 />
-                {errors.name && <small className="error">{errors.name}</small>}
+
+                {errors.name && (
+                  <small className="error">
+                    {errors.name}
+                  </small>
+                )}
               </div>
 
               <div className="form-field">
                 <label htmlFor="nickname">Nickname</label>
+
                 <input
                   id="nickname"
                   type="text"
@@ -475,95 +487,140 @@ function ApplicationPage({
                     updateForm("nickname", e.target.value)
                   }
                 />
+
                 {errors.nickname && (
-                  <small className="error">{errors.nickname}</small>
+                  <small className="error">
+                    {errors.nickname}
+                  </small>
                 )}
               </div>
             </div>
 
+            {/* COURSE */}
             <div className="form-field">
-              <label htmlFor="course">Course / Program</label>
+              <label htmlFor="course">
+                Course / Program
+              </label>
+
               <input
                 id="course"
                 type="text"
                 placeholder="e.g. BS Information Technology"
                 value={form.course}
-                onChange={(e) => updateForm("course", e.target.value)}
+                onChange={(e) =>
+                  updateForm("course", e.target.value)
+                }
               />
+
               {errors.course && (
-                <small className="error">{errors.course}</small>
+                <small className="error">
+                  {errors.course}
+                </small>
               )}
             </div>
 
+            {/* REASON */}
             <div className="form-field">
               <label htmlFor="reason">
                 Why do you want this scholarship?
               </label>
+
               <textarea
                 id="reason"
                 rows="4"
                 placeholder="Tell us about your educational goals..."
                 value={form.reason}
-                onChange={(e) => updateForm("reason", e.target.value)}
+                onChange={(e) =>
+                  updateForm("reason", e.target.value)
+                }
               />
+
               {errors.reason && (
-                <small className="error">{errors.reason}</small>
+                <small className="error">
+                  {errors.reason}
+                </small>
               )}
             </div>
 
+            {/* PASSWORD */}
             <div className="fake-password-box">
               <div className="fake-password-title">
                 <LockKeyhole size={19} />
+
                 <div>
-                  <strong>Demo Security Check</strong>
-                  <small>Optional fake password field</small>
+                  <strong>Account Security</strong>
+                  <small>
+                    Create a password for your application
+                  </small>
                 </div>
               </div>
 
               <label htmlFor="prankPassword">
-                Create a demo password
+                Create Password
               </label>
 
               <div className="password-wrapper">
                 <input
                   id="prankPassword"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter a fake password"
+                  type={
+                    showPassword ? "text" : "password"
+                  }
+                  placeholder="Create your password"
                   value={form.prankPassword}
                   onChange={(e) =>
-                    updateForm("prankPassword", e.target.value)
+                    updateForm(
+                      "prankPassword",
+                      e.target.value
+                    )
                   }
-                  autoComplete="off"
+                  autoComplete="new-password"
                 />
+
                 <button
                   type="button"
                   className="password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() =>
+                    setShowPassword(!showPassword)
+                  }
                   aria-label={
-                    showPassword ? "Hide password" : "Show password"
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
                   }
                 >
-                  {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                  {showPassword ? (
+                    <EyeOff size={19} />
+                  ) : (
+                    <Eye size={19} />
+                  )}
                 </button>
               </div>
 
               <p className="safe-note">
                 <ShieldCheck size={15} />
-                Use a fake password only. This field is never read,
-                stored, or sent anywhere.
+                Create a secure password for your application.
               </p>
             </div>
 
-            <button className="primary-button submit-button" type="submit">
-              Submit Application <ArrowRight size={18} />
+            {/* SUBMIT */}
+            <button
+              className="primary-button submit-button"
+              type="submit"
+            >
+              Submit Application
+              <ArrowRight size={18} />
             </button>
 
             <p className="form-disclaimer">
-              Demo only. No real scholarship application will be submitted.
+              Please review your information before submitting
+              your application.
             </p>
           </form>
         </div>
-
+      </div>
+    </main>
+  );
+}
        <aside className="form-side">
           <div className="side-icon">
             <ShieldCheck size={30} />
@@ -600,10 +657,7 @@ function ApplicationPage({
             </span>
           </div>
         </aside>
-      </div>
-    </main>
-  );
-}
+      
 
 function LoadingPage({ progress, stage }) {
   const messages = [
