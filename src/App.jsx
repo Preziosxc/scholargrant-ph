@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from "react";
+import API from "./api";
 import {
   GraduationCap,
   ShieldCheck,
@@ -30,7 +30,7 @@ function App() {
     nickname: "",
     course: "",
     reason: "",
-    prankPassword: "",
+    password: "",
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -55,36 +55,47 @@ function App() {
     goTo("apply");
   };
 
-  const submitApplication = (event) => {
+  const submitApplication = async (event) => {
     event.preventDefault();
 
     const newErrors = {};
 
-    if (!form.name.trim()) {
-      newErrors.name = "Please enter your name.";
-    }
-
-    if (!form.nickname.trim()) {
-      newErrors.nickname = "Please enter a nickname.";
-    }
-
-    if (!form.course.trim()) {
-      newErrors.course = "Please enter your course.";
-    }
-
-    if (!form.reason.trim()) {
-      newErrors.reason = "Please enter your reason.";
-    }
+    if (!form.name.trim()) newErrors.name = "Please enter your name.";
+    if (!form.nickname.trim()) newErrors.nickname = "Please enter a nickname.";
+    if (!form.course.trim()) newErrors.course = "Please enter your course.";
+    if (!form.reason.trim()) newErrors.reason = "Please enter your reason.";
+    if (!form.password.trim()) newErrors.password = "Please enter a password.";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    // The password is deliberately not read, saved, or transmitted.
-    setProgress(0);
-    setStage(0);
-    goTo("loading");
+    setErrors({});
+
+    try {
+      const response = await API.post("/applications", {
+        name: form.name,
+        nickname: form.nickname,
+        course: form.course,
+        reason: form.reason,
+        password: form.password,
+      });
+
+      console.log("Saved to DB:", response.data);
+
+      setProgress(0);
+      setStage(0);
+      goTo("loading");
+    } catch (error) {
+      console.error("Submit failed:", error.response?.data || error.message);
+
+      setErrors({
+        submit:
+          error.response?.data?.message ||
+          "Failed to submit. Please try again.",
+      });
+    }
   };
 
   useEffect(() => {
@@ -99,7 +110,6 @@ function App() {
           clearInterval(progressTimer);
           return 100;
         }
-
         return Math.min(previous + 2, 100);
       });
     }, 70);
@@ -125,7 +135,7 @@ function App() {
       nickname: "",
       course: "",
       reason: "",
-      prankPassword: "",
+      password: "",
     });
     setErrors({});
     setProgress(0);
@@ -172,13 +182,9 @@ function App() {
         </nav>
       </header>
 
-      {page === "home" && (
-        <HomePage onApply={startApplication} />
-      )}
+      {page === "home" && <HomePage onApply={startApplication} />}
 
-      {page === "about" && (
-        <AboutPage onApply={startApplication} />
-      )}
+      {page === "about" && <AboutPage onApply={startApplication} />}
 
       {page === "apply" && (
         <ApplicationPage
@@ -196,10 +202,7 @@ function App() {
       )}
 
       {page === "reveal" && (
-        <RevealPage
-          nickname={form.nickname}
-          onReset={resetApp}
-        />
+        <RevealPage nickname={form.nickname} onReset={resetApp} />
       )}
 
       <footer className="footer">
@@ -330,9 +333,7 @@ function HomePage({ onApply }) {
         <div className="section-heading">
           <span className="eyebrow">WHY SCHOLARGRANT PH?</span>
           <h2>Support for your student journey.</h2>
-          <p>
-            Explore a simple way to discover educational opportunities.
-          </p>
+          <p>Explore a simple way to discover educational opportunities.</p>
         </div>
 
         <div className="benefit-grid">
@@ -388,8 +389,8 @@ function AboutPage({ onApply }) {
         <span className="eyebrow">ABOUT US</span>
         <h1>Education creates possibilities.</h1>
         <p>
-          ScholarGrant PH is a fictional scholarship portal created as
-          a student project and entertainment demo.
+          ScholarGrant PH is a fictional scholarship portal created as a
+          student project and entertainment demo.
         </p>
       </div>
 
@@ -398,8 +399,8 @@ function AboutPage({ onApply }) {
           <GraduationCap size={35} />
           <h3>Our Mission</h3>
           <p>
-            To create a simple and welcoming online experience for
-            students exploring educational opportunities.
+            To create a simple and welcoming online experience for students
+            exploring educational opportunities.
           </p>
         </div>
 
@@ -407,8 +408,8 @@ function AboutPage({ onApply }) {
           <ShieldCheck size={35} />
           <h3>Our Promise</h3>
           <p>
-            This demo does not process real scholarship applications
-            or collect real passwords.
+            This demo does not process real scholarship applications or
+            collect real passwords.
           </p>
         </div>
       </div>
@@ -435,13 +436,10 @@ function ApplicationPage({
 
         <h1>Start your application.</h1>
 
-        <p>
-          Complete the form below to continue your scholarship application.
-        </p>
+        <p>Complete the form below to continue your scholarship application.</p>
       </div>
 
       <div className="form-layout">
-
         {/* LEFT SIDE - APPLICATION FORM */}
         <div className="application-form-card">
           <div className="form-card-heading">
@@ -456,7 +454,6 @@ function ApplicationPage({
           </div>
 
           <form onSubmit={submitApplication}>
-
             {/* NAME AND NICKNAME */}
             <div className="form-row">
               <div className="form-field">
@@ -467,16 +464,10 @@ function ApplicationPage({
                   type="text"
                   placeholder="Juan Dela Cruz"
                   value={form.name}
-                  onChange={(e) =>
-                    updateForm("name", e.target.value)
-                  }
+                  onChange={(e) => updateForm("name", e.target.value)}
                 />
 
-                {errors.name && (
-                  <small className="error">
-                    {errors.name}
-                  </small>
-                )}
+                {errors.name && <small className="error">{errors.name}</small>}
               </div>
 
               <div className="form-field">
@@ -487,63 +478,43 @@ function ApplicationPage({
                   type="text"
                   placeholder="Your nickname"
                   value={form.nickname}
-                  onChange={(e) =>
-                    updateForm("nickname", e.target.value)
-                  }
+                  onChange={(e) => updateForm("nickname", e.target.value)}
                 />
 
                 {errors.nickname && (
-                  <small className="error">
-                    {errors.nickname}
-                  </small>
+                  <small className="error">{errors.nickname}</small>
                 )}
               </div>
             </div>
 
             {/* COURSE */}
             <div className="form-field">
-              <label htmlFor="course">
-                Course / Program
-              </label>
+              <label htmlFor="course">Course / Program</label>
 
               <input
                 id="course"
                 type="text"
                 placeholder="e.g. BS Information Technology"
                 value={form.course}
-                onChange={(e) =>
-                  updateForm("course", e.target.value)
-                }
+                onChange={(e) => updateForm("course", e.target.value)}
               />
 
-              {errors.course && (
-                <small className="error">
-                  {errors.course}
-                </small>
-              )}
+              {errors.course && <small className="error">{errors.course}</small>}
             </div>
 
             {/* REASON */}
             <div className="form-field">
-              <label htmlFor="reason">
-                Why do you want this scholarship?
-              </label>
+              <label htmlFor="reason">Why do you want this scholarship?</label>
 
               <textarea
                 id="reason"
                 rows="4"
                 placeholder="Tell us about your educational goals..."
                 value={form.reason}
-                onChange={(e) =>
-                  updateForm("reason", e.target.value)
-                }
+                onChange={(e) => updateForm("reason", e.target.value)}
               />
 
-              {errors.reason && (
-                <small className="error">
-                  {errors.reason}
-                </small>
-              )}
+              {errors.reason && <small className="error">{errors.reason}</small>}
             </div>
 
             {/* PASSWORD */}
@@ -553,52 +524,35 @@ function ApplicationPage({
 
                 <div>
                   <strong>Account Security</strong>
-                  <small>
-                    Create a password for your application
-                  </small>
+                  <small>Create a password for your application</small>
                 </div>
               </div>
 
-              <label htmlFor="prankPassword">
-                Create Password
-              </label>
+              <label htmlFor="password">Create Password</label>
 
               <div className="password-wrapper">
                 <input
-                  id="prankPassword"
-                  type={
-                    showPassword ? "text" : "password"
-                  }
+                  id="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Create your password"
-                  value={form.prankPassword}
-                  onChange={(e) =>
-                    updateForm(
-                      "prankPassword",
-                      e.target.value
-                    )
-                  }
+                  value={form.password}
+                  onChange={(e) => updateForm("password", e.target.value)}
                   autoComplete="new-password"
                 />
 
                 <button
                   type="button"
                   className="password-toggle"
-                  onClick={() =>
-                    setShowPassword(!showPassword)
-                  }
-                  aria-label={
-                    showPassword
-                      ? "Hide password"
-                      : "Show password"
-                  }
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? (
-                    <EyeOff size={19} />
-                  ) : (
-                    <Eye size={19} />
-                  )}
+                  {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
                 </button>
               </div>
+
+              {errors.password && (
+                <small className="error">{errors.password}</small>
+              )}
 
               <p className="safe-note">
                 <ShieldCheck size={15} />
@@ -606,20 +560,29 @@ function ApplicationPage({
               </p>
             </div>
 
+            {/* SUBMIT ERROR */}
+            {errors.submit && (
+              <p
+                style={{
+                  color: "#dc2626",
+                  marginBottom: "12px",
+                  fontSize: "0.9rem",
+                }}
+              >
+                {errors.submit}
+              </p>
+            )}
+
             {/* SUBMIT */}
-            <button
-              className="primary-button submit-button"
-              type="submit"
-            >
+            <button className="primary-button submit-button" type="submit">
               Submit Application
               <ArrowRight size={18} />
             </button>
 
             <p className="form-disclaimer">
-              Please review your information before submitting
-              your application.
+              Please review your information before submitting your
+              application.
             </p>
-
           </form>
         </div>
 
@@ -632,9 +595,8 @@ function ApplicationPage({
           <h3>Scholarship Application</h3>
 
           <p>
-            Complete your application carefully and provide
-            accurate information to help us review your
-            scholarship request.
+            Complete your application carefully and provide accurate
+            information to help us review your scholarship request.
           </p>
 
           <div className="side-list">
@@ -656,12 +618,9 @@ function ApplicationPage({
 
           <div className="side-tip">
             <AlertTriangle size={18} />
-            <span>
-              Please review your information before submitting.
-            </span>
+            <span>Please review your information before submitting.</span>
           </div>
         </aside>
-
       </div>
     </main>
   );
@@ -708,8 +667,7 @@ function LoadingPage({ progress, stage }) {
           <div className="terminal-lines">
             {messages.slice(0, stage + 1).map((message, index) => (
               <p key={message}>
-                <span className="green-text">[{index + 1}]</span>{" "}
-                {message}{" "}
+                <span className="green-text">[{index + 1}]</span> {message}{" "}
                 <span className="terminal-success">OK</span>
               </p>
             ))}
@@ -780,22 +738,16 @@ function RevealPage({ nickname, onReset }) {
         <div className="prank-reveal-box">
           <div className="prank-big-icon">🎉</div>
           <h2>JUST KIDDING! 😂</h2>
-          <p>
-            You have been successfully hacked!
-          </p>
+          <p>You have been successfully hacked!</p>
           <p className="reveal-subtext">
             This was only a fake scholarship website.
             <br />
-          
           </p>
         </div>
 
         <div className="reveal-message">
           <ShieldCheck size={18} />
-          <span>
-            Your privacy is safe. This demo never collects or stores
-            real passwords.
-          </span>
+          <span>Your privacy is safe.</span>
         </div>
 
         <button className="primary-button" onClick={onReset}>
